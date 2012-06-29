@@ -1,0 +1,10 @@
+{
+   "browser_action": {
+      "default_icon": "images/mxunit_image16.png",
+      "popup": "popup.html"
+   },
+   "description": "MXUnit Runner",
+   "name": "MXUnit Runner",
+   "permissions": [ "https://*/*,http://*/*","http://nwahec.leespc.com/" ],
+   "version": "1.0"
+}
