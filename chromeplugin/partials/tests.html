@@ -9,7 +9,7 @@
   <div ng-repeat="config in configurations | filter:hideDeleted" class="row-fluid">
     <div class="span8" >
       <span ng-click="config.show=!config.show">&nbsp;{{config|directoryOpenStatusIndicator}}&nbsp;</span>
-      <span ng-click="loadTests(config)">{{config.serverurl}}</span>
+      <span ng-click="loadTests(config)"><h4>{{config.serverurl}}</h4></span>
     </div>
     <div class="span1" ng-click="runAllConfig(config)">Run</div>
     <div class="span1">{{config.TIME}}ms</div>
@@ -19,7 +19,7 @@
     </div>
     <!-- list all Test Components-->
     <div ng-show="config.show" ng-repeat="test in config.tests" class="row-fluid">
-      <div class="span8" ng-click="test.show=!test.show">&nbsp;&nbsp;&nbsp;&nbsp;<i class="{{test.RESULT|statusIcon}}"></i>&nbsp;{{test.componentPath}}</div>
+      <div class="span8" ng-click="test.show=!test.show">&nbsp;&nbsp;&nbsp;&nbsp;<i class="{{test.RESULT|statusIcon}}"></i>&nbsp;{{test.componentPath.split('.').pop()}}</div>
       <div class="span1" ng-click="runAllTest(test)">Run</div>
       <div class="span1">{{test.TIME}}ms</div>
       <div class="span2" > {{test.RESULT}}</div>

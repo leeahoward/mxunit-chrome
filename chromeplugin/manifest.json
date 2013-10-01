@@ -5,6 +5,6 @@
    },
    "description": "MXUnit Runner",
    "name": "MXUnit Runner",
-   "permissions": [ "https://*/*,http://*/*","http://nwahec.leespc.com/" ],
+   "permissions": ["<all_urls>"],
    "version": "1.0"
 }

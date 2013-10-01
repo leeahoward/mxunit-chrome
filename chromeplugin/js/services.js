@@ -10,11 +10,9 @@ angular.module('mxunitServices',[]).
 
 		function getConfigs(){
 			if(loaded==true){
-				console.log('loaded');
 				return configurations;	
 			}
 
-			console.log('not loaded');
 			var tmp = [];
 			var json= localStorage[storagekey];
 		    if(typeof json!= "undefined") {
@@ -44,7 +42,7 @@ angular.module('mxunitServices',[]).
 		    }
 		    configurations = tmp;
 		    loaded=true;
-		    console.log(configurations);
+		    //console.log(configurations);
 		    return configurations;
 		}
 
@@ -92,8 +90,6 @@ angular.module('mxunitServices',[]).
 		}
 
 		function addConfig(config){
-			console.log('addConfig');
-			console.log(config);
 			var configurations = getConfigs();
 			if(!config.id && config.id != 0){
 				config.id = configurations.length;
@@ -127,10 +123,12 @@ angular.module('mxunitServices',[]).
 			saveConfigurations:saveConfigurations
 		};
 	}).
-	factory('TestService', function($http,OptionService){
+	factory('TestService', function($log,$q,$http,OptionService){
 		var storagekey = "mxunit";
 		var loaded = false;
-		var testRunKey= 0;
+		var testRunKey= newGuid();
+		var promisecount = 0;
+		var promises = [];
 
 		//recursively loads all tests in the folder.  Seperate ajax call for each folder.
 		function getDirectory(config,directoryname){
@@ -138,62 +136,67 @@ angular.module('mxunitServices',[]).
 			var serverurl = config.serverurl;
 			var params = {method:'getDirectory',directoryname:directoryname,returnformat:'json'};
 			var webfolder = serverurl.substring(0,serverurl.lastIndexOf('/'));
-			$http({
+			var promise;
+			return promises[promises.length]=$http({
 				method:'GET',
 				url:serverurl,
 			    params: params,
 			    dataType: 'json',
-			}).
-		    success(function(response) {
-		    	//console.log(response);
-		    	//loop through directories and recursively call this method
-		    	for(var i=0;i<response.DIRECTORIES.length;i++){
-		    		config[response.DIRECTORIES[i].NAME] = [];
-			    	getDirectory( config, directoryname + '/' + response.DIRECTORIES[i].NAME );
-		    	}
-		    	//loop through files and get all tests for the file
-	    		config[directoryname] = response.FILEMD;
+			}).success(function(response) {
+				var promises=[];
+	    	//console.log(response);
+	    	//loop through directories and recursively call this method
+	    	for(var i=0;i<response.DIRECTORIES.length;i++){
+	    		config[response.DIRECTORIES[i].NAME] = [];
+		    	promises[promises.length] = getDirectory( config, directoryname + '/' + response.DIRECTORIES[i].NAME );
+	    	}
+	    	//loop through files and get all tests for the file
+    		config[directoryname] = response.FILEMD;
 
-		    	for(var i=0;i<response.FILEMD.length;i++){
-		    		if(response.FILEMD[i].PATH){
-			    		var newtest= {config:config,runnablemethods:[],componentName:response.FILEMD[i].PATH,componentPath:response.FILEMD[i].NAME};
-			    		for(var x=0;x< response.FILEMD[i].RUNNABLEMETHODS.length;x++){
-				    		var newmethod= {name:response.FILEMD[i].RUNNABLEMETHODS[x],test:newtest,config:config};
-				    		newtest.runnablemethods[newtest.runnablemethods.length] = newmethod;
-			    		}
-			    		config.tests[config.tests.length] = newtest;
+	    	for(var i=0;i<response.FILEMD.length;i++){
+	    		if(response.FILEMD[i].PATH){
+		    		var newtest= {config:config,runnablemethods:[],componentName:response.FILEMD[i].PATH,componentPath:response.FILEMD[i].NAME};
+		    		for(var x=0;x< response.FILEMD[i].RUNNABLEMETHODS.length;x++){
+			    		var newmethod= {name:response.FILEMD[i].RUNNABLEMETHODS[x],test:newtest,config:config};
+			    		newtest.runnablemethods[newtest.runnablemethods.length] = newmethod;
+		    		}
+		    		config.tests[config.tests.length] = newtest;
 					}
-			    }
-		    }).
-		    error(function(ErrorMsg) {
-		       console.log('Error');
-		    });
+			  }
+		  }).error(function(ErrorMsg) {
+		    console.log('Error');
+		  });
 		}
+    function newGuid() {
+      var S4 = function() {
+         return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+      };
+      return 'X' + (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+    }
 
 		//recursively loads all tests in the folder.  Seperate ajax call for each folder.
 		function runTestMethod(method){
 			//http://nwahec.leespc.com/rest/test/RemoteFacade.cfc?method=getTestsInDirectory&directoryname=/&returnformat=json
 			var serverurl = method.config.serverurl;
 			var params = {method:'executetestcase',componentName:method.test.componentPath,returnformat:'json',methodnames:method.name,testRunKey:testRunKey};
-			testRunKey++;
+			testRunKey = newGuid();
 			method.result = {RESULT:"Running"};
 			$http({
 				method:'GET',
 				url:serverurl,
-			    params: params,
-			    dataType: 'json',
-			}).
-		    success(function(response) {
-		    	method.result = response[method.test.componentPath][method.name];
-		    	method.test.TIME += parseFloat(method.result.TIME);
-		    	method.config.TIME += parseFloat(method.result.TIME);
-		    	if(method.result.RESULT != 'Passed'){
-			    	method.test.RESULT= method.result.RESULT;
-		    	}
-		    }).
-		    error(function(ErrorMsg) {
-		       console.log('Error');
-		    });
+		    params: params,
+		    dataType: 'json',
+			}).success(function(response) {
+	    	method.result = response[method.test.componentPath][method.name];
+	    	method.test.TIME += parseFloat(method.result.TIME);
+	    	method.config.TIME += parseFloat(method.result.TIME);
+	    	if(method.result.RESULT != 'Passed'){
+		    	method.test.RESULT= method.result.RESULT;
+	    	}
+	    }).
+	    error(function(ErrorMsg) {
+	       console.log('Error');
+	    });
 		}
 
 		return {

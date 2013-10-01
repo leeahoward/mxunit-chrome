@@ -2,7 +2,7 @@
 'use strict';
 
 /* Controllers */
-function TestCtrl($scope, $routeParams,$location, OptionService, TestService) {
+function TestCtrl($scope, $routeParams,$location,$log,OptionService, TestService) {
   console.log('TestCtrl');
   $scope.configurations= OptionService.getConfigs();
   $scope.currentConfig = OptionService.newConfig(); 
@@ -55,9 +55,18 @@ function TestCtrl($scope, $routeParams,$location, OptionService, TestService) {
   };
 
   $scope.loadTests= function(config) {
+    if(config.tests&&config.tests.length){
+      var reload = confirm("Reload?")
+      if(reload!=true){
+        return;
+      }
+    }
+
     config.tests = [];
     config.show=true;
-    TestService.getDirectory(config,".");
+    TestService.getDirectory(config,".").then(function(){
+      $log.info('DONE');
+    });
   };
 }
 
