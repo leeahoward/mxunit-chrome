@@ -3,7 +3,7 @@
 
 /* App Module */
 
-angular.module('mxunit', ['mxunitfilters', 'mxunitServices']).
+angular.module('mxunit', ['mxunitfilters', 'mxunitServices','AlertService']).
   config(['$routeProvider', function($routeProvider) {
   $routeProvider.
       when('/options', {templateUrl: 'partials/options.html',   controller: OptionCtrl}).

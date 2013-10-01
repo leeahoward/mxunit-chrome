@@ -9,13 +9,15 @@
 <div class="container-fluid">
   <!-- list all Confugurations -->
   <div ng-repeat="config in configurations | filter:hideDeleted" class="row-fluid">
-  
+
     <div class="span8" >
-      <span ng-click="config.show=!config.show">&nbsp;{{config|directoryOpenStatusIndicator}}&nbsp;</span>
-      <span ng-click="loadTests(config)"><h4>{{config.serverurl}}</h4></span>
+      <span ng-click="config.show=!config.show"><i class="{{config|directoryOpenStatusIndicator}}"></i></span>
+      <span ng-click="loadTests(config)">{{config.serverurl}}</span>
     </div>
 
-    <div class="span1" ng-click="runAllConfig(config)">Run</div>
+    <div class="span1" ng-click="runAllInConfig(config)">
+      <span ng-show="!working">Run</span>
+    </div>
     <div class="span1">{{config.TIME}}ms</div>
 
     <div class="span2" >
@@ -26,14 +28,18 @@
     <!-- list all Test Components-->
     <div ng-show="config.show" ng-repeat="test in config.tests" class="row-fluid">
       <div class="span8" ng-click="test.show=!test.show">&nbsp;&nbsp;&nbsp;&nbsp;<i class="{{test.RESULT|statusIcon}}"></i>&nbsp;{{test.componentPath.split('.').pop()}}</div>
-      <div class="span1" ng-click="runAllTest(test)">Run</div>
+      <div class="span1" ng-click="runAllInComponent(test,config)">
+        <span ng-show="!working">Run</span>
+      </div>
       <div class="span1">{{test.TIME}}ms</div>
       <div class="span2" > {{test.RESULT}}</div>
       <!-- list all Tests in this config-->
       <div ng-show="test.show" ng-repeat="method in test.runnablemethods | filter:hidePassed " class="row-fluid">
         <div class="span12">
           <div class="span8" ng-click="method.result.show=!method.result.show" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="{{method.result.RESULT|statusIcon}}"></i>&nbsp;{{method.name}}</div>
-          <div class="span1" ng-click="runTestMethod(method)">Run</div>
+          <div class="span1" ng-click="runTestMethod(method,config,test)">
+            <span ng-show="!working">Run</span>
+          </div>
           <div class="span1">{{method.result.TIME}}ms</div>
           <div class="span2" >{{method.result.RESULT}}</div>
         </div>

@@ -3,8 +3,9 @@
 /* Services */
 
 angular.module('mxunitServices',[]).
-	factory('OptionService', function(){
-		var storagekey = "mxunit";
+	factory('OptionService', function($log,AlertService){
+		var urlStorageKey = "mxunit_urls";
+		var resultStorageKey= "mxunit_results";
 		var loaded = false;
 		var configurations = [];
 
@@ -14,7 +15,7 @@ angular.module('mxunitServices',[]).
 			}
 
 			var tmp = [];
-			var json= localStorage[storagekey];
+			var json= localStorage[urlStorageKey];
 		    if(typeof json!= "undefined") {
 		        tmp=window.JSON.parse(json);
 		        if(!tmp.length){
@@ -24,21 +25,8 @@ angular.module('mxunitServices',[]).
 		    else{
 		    	tmp=[];
 		    }
-		    //console.log(tmp);
 		    for(var i=0;i<tmp.length;i++){
 		    	tmp[i].id = i;
-		    	tmp[i].TIME= 0;
-		    	for(var x=0;x<tmp[i].tests.length;x++){
-		    		var test = tmp[i].tests[x];
-		    		test.config = tmp[i];
-		    		test.config.TIME = 0;
-			    	for(var y=0;y<test.runnablemethods.length;y++){
-			    		var method = test.runnablemethods[y];
-			    		method.test = test;
-			    		method.TIME= 0;
-			    		method.config= test.config;
-			    	}
-		    	}
 		    }
 		    configurations = tmp;
 		    loaded=true;
@@ -51,14 +39,13 @@ angular.module('mxunitServices',[]).
 			var c_return = [];
 			for(var i=0;i<c.length;i++){
 				//console.log(c[i]);
-				if(!c[i].deleted){
-					c_return[c_return.length] = 
-						{
-							serverurl:c[i].serverurl,
-							id:c_return.length,
-							tests:getFilesForStorage(c[i].tests),
-							show:c[i].show
-						};
+				if(!('deleted' in c[i])){
+					c_return[c_return.length] = {
+						serverurl:c[i].serverurl,
+						id:c_return.length,
+						tests:getFilesForStorage(c[i].tests),
+						show:c[i].show
+					};
 				}
 			}
 			return c_return;
@@ -79,14 +66,18 @@ angular.module('mxunitServices',[]).
 		}
 
 		function getMethodsForStorage(methods){
+			/*
 			var f_return = [];
 			methods = methods?methods:[];
 			for(var i=0;i<methods.length;i++){
+				$log.info(methods[i]);
 				f_return[f_return.length] = {
-					name:methods[i].name
+					name:methods[i].name,
+					result:methods[i].result
 				};
 			}
-			return f_return;
+			*/
+			return methods;
 		}
 
 		function addConfig(config){
@@ -106,8 +97,8 @@ angular.module('mxunitServices',[]).
 		}
 
 		function saveConfigurations(){
-
-	      localStorage[storagekey] = window.JSON.stringify(getConfigsForStorage());
+			AlertService.addAlert('Saved!');
+	      localStorage[urlStorageKey] = window.JSON.stringify(getConfigs());
 		}
 
 
@@ -122,9 +113,8 @@ angular.module('mxunitServices',[]).
 			addConfig:addConfig,
 			saveConfigurations:saveConfigurations
 		};
-	}).
+	}). 
 	factory('TestService', function($log,$q,$http,OptionService){
-		var storagekey = "mxunit";
 		var loaded = false;
 		var testRunKey= newGuid();
 		var promisecount = 0;
@@ -136,37 +126,54 @@ angular.module('mxunitServices',[]).
 			var serverurl = config.serverurl;
 			var params = {method:'getDirectory',directoryname:directoryname,returnformat:'json'};
 			var webfolder = serverurl.substring(0,serverurl.lastIndexOf('/'));
-			var promise;
-			return promises[promises.length]=$http({
+			var deferred = $q.defer();
+			var promises = [];
+			$http({
 				method:'GET',
 				url:serverurl,
 			    params: params,
 			    dataType: 'json',
 			}).success(function(response) {
-				var promises=[];
-	    	//console.log(response);
 	    	//loop through directories and recursively call this method
-	    	for(var i=0;i<response.DIRECTORIES.length;i++){
-	    		config[response.DIRECTORIES[i].NAME] = [];
-		    	promises[promises.length] = getDirectory( config, directoryname + '/' + response.DIRECTORIES[i].NAME );
+	    	for(var i=0; i<response.DIRECTORIES.length; i++){
+	    		config[response.DIRECTORIES[i].NAME ] = [];
+		    	promises.push(getDirectory( config, directoryname + '/' + response.DIRECTORIES[i].NAME ));
 	    	}
+	    	$q.all(promises).then(
+	    		function(){
+	    			deferred.resolve();	
+	    		}
+	    	);
+
 	    	//loop through files and get all tests for the file
     		config[directoryname] = response.FILEMD;
 
 	    	for(var i=0;i<response.FILEMD.length;i++){
 	    		if(response.FILEMD[i].PATH){
-		    		var newtest= {config:config,runnablemethods:[],componentName:response.FILEMD[i].PATH,componentPath:response.FILEMD[i].NAME};
-		    		for(var x=0;x< response.FILEMD[i].RUNNABLEMETHODS.length;x++){
-			    		var newmethod= {name:response.FILEMD[i].RUNNABLEMETHODS[x],test:newtest,config:config};
-			    		newtest.runnablemethods[newtest.runnablemethods.length] = newmethod;
+		    		var newtest = {
+		    			runnablemethods:[],
+		    			componentName:response.FILEMD[i].PATH,
+		    			componentPath:response.FILEMD[i].NAME
+		    		};
+		    		for( var x=0; x<response.FILEMD[i].RUNNABLEMETHODS.length; x++ ){
+			    		newtest.runnablemethods.push({
+			    			name:response.FILEMD[i].RUNNABLEMETHODS[x],
+			    			result:{}
+			    		});
 		    		}
-		    		config.tests[config.tests.length] = newtest;
+		    		$log.info({push_test:newtest});
+		    		config.tests.push(newtest);
 					}
 			  }
 		  }).error(function(ErrorMsg) {
-		    console.log('Error');
+		    $log.info('Error');
+		  });
+
+		  return deferred.promise.then(function(){
+		 		OptionService.saveConfigurations(); 
 		  });
 		}
+
     function newGuid() {
       var S4 = function() {
          return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
@@ -174,41 +181,58 @@ angular.module('mxunitServices',[]).
       return 'X' + (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
     }
 
+
+    function runAllInComponent(test,config,save){
+	    var promises = [];
+	    test.TIME = 0;
+	    test.show=true;
+	    test.RESULT="Ok";
+	    for(var i=0;i<test.runnablemethods.length;i++){
+	      promises.push(runTestMethod(test.runnablemethods[i],config,test,false));
+	    }
+	    return $q.all(promises).then(save?OptionService.saveConfigurations:null);
+	  }
+
+    function runAllInConfig(config,save){
+	    var promises = [];
+	    config.TIME = 0;
+	    config.show=true;
+
+	    for(var i=0;i<config.tests.length;i++){
+	      promises.push(runAllInComponent(config.tests[i],config,false));
+	    }
+	    return $q.all(promises).then(save?OptionService.saveConfigurations:null);
+    }
+
 		//recursively loads all tests in the folder.  Seperate ajax call for each folder.
-		function runTestMethod(method){
+		function runTestMethod(method,config,test,save){
 			//http://nwahec.leespc.com/rest/test/RemoteFacade.cfc?method=getTestsInDirectory&directoryname=/&returnformat=json
-			var serverurl = method.config.serverurl;
-			var params = {method:'executetestcase',componentName:method.test.componentPath,returnformat:'json',methodnames:method.name,testRunKey:testRunKey};
+			var serverurl = config.serverurl;
+			var params = {method:'executetestcase',componentName:test.componentPath,returnformat:'json',methodnames:method.name,testRunKey:testRunKey};
 			testRunKey = newGuid();
 			method.result = {RESULT:"Running"};
-			$http({
+			return $http({
 				method:'GET',
 				url:serverurl,
 		    params: params,
 		    dataType: 'json',
 			}).success(function(response) {
-	    	method.result = response[method.test.componentPath][method.name];
-	    	method.test.TIME += parseFloat(method.result.TIME);
-	    	method.config.TIME += parseFloat(method.result.TIME);
+	    	method.result = response[test.componentPath][method.name];
+	    	test.TIME += parseFloat(method.result.TIME);
+	    	config.TIME += parseFloat(method.result.TIME);
 	    	if(method.result.RESULT != 'Passed'){
-		    	method.test.RESULT= method.result.RESULT;
+		    	test.RESULT= method.result.RESULT;
 	    	}
 	    }).
 	    error(function(ErrorMsg) {
 	       console.log('Error');
-	    });
+	    }).then(save?OptionService.saveConfigurations:null);
 		}
 
 		return {
 			getDirectory:getDirectory,
-			runTestMethod:runTestMethod
+			runTestMethod:runTestMethod,
+			runAllInComponent:runAllInComponent,
+			runAllInConfig:runAllInConfig
 		};
-	}).filter('directoryOpenStatusIndicator',function(){
-	    return function(item) {
-	    	if(item.show &&  item.show==true){
-	    		return '-';
-	    	}else{
-	    		return '+';
-	    	}
-	    } 
 	});

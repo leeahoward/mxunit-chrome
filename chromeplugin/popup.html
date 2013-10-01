@@ -10,7 +10,7 @@
   <script src="js/controllers.js"></script>
   <script src="js/filters.js"></script>
   <script src="js/services.js"></script>
-  <!--<script src="lib/angular/angular-resource.js"></script>-->
+  <script src="js/AlertModule.js"></script>
 </head>
 <body id="popup" data-spy="scroll" data-target=".subnav" data-offset="50">
   <!-- Navbar
@@ -33,8 +33,8 @@
   </div>
   <div>
     <br><br><br>
-    <br><br><br>
   </div>
+  <div ng-include src="'partials/Alerts.html'" ></div>
   <div ng-view></div>
 
 </body>

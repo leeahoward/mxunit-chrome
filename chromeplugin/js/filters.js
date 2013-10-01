@@ -37,5 +37,12 @@ angular.module('mxunitfilters', []).filter('deleted', function() {
         return "icon-thumbs-up";
       }
     }
-})
-;
+}).filter('directoryOpenStatusIndicator',function(){
+      return function(item) {
+        if(item.show &&  item.show==true){
+          return 'icon-minus';
+        }else{
+          return 'icon-plus';
+        }
+      } 
+  });

@@ -1,0 +1,6 @@
+<span ng-controller="AlertCtrl">
+  <div ng-repeat="alert in servicedata.alerts" class='alert' ng-class='type && "alert-" + alert.type'>
+    <div>{{alert.msg}}</div>
+    <button type='button' class='close' ng-click='close()'>&times;</button>
+  </div>
+</span>
