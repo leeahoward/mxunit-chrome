@@ -4,7 +4,7 @@
 /* Controllers */
 function TestCtrl($scope, $routeParams,$location,$log,OptionService, TestService) {
   console.log('TestCtrl');
-  $scope.configurations= OptionService.getConfigs();
+  $scope.configurations = OptionService.getConfigs();
   $scope.currentConfig = OptionService.newConfig(); 
   $scope.disableHidePassedFilter = false; 
 

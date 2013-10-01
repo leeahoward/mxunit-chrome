@@ -6,7 +6,7 @@
 angular.module('mxunit', ['mxunitfilters', 'mxunitServices']).
   config(['$routeProvider', function($routeProvider) {
   $routeProvider.
-      when('/options', {template: 'partials/options.html',   controller: OptionCtrl}).
-      when('/tests', {template: 'partials/tests.html',   controller: TestCtrl}).
+      when('/options', {templateUrl: 'partials/options.html',   controller: OptionCtrl}).
+      when('/tests', {templateUrl: 'partials/tests.html',   controller: TestCtrl}).
       otherwise({redirectTo: '/tests'});
 }]);
