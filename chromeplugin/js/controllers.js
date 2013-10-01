@@ -76,7 +76,7 @@ function TestCtrl($scope, $q, $routeParams,$location,$log,OptionService, TestSer
 
     config.tests = [];
     config.show=true;
-    TestService.getDirectory(config,".").then(function(){
+    TestService.getDirectory(config,".",true).then(function(){
       $scope.working = false;
       $log.info('DONE');
     });
@@ -97,15 +97,15 @@ function OptionCtrl($log, $scope, $routeParams,$location,OptionService,AlertServ
       OptionService.addConfig($scope.currentConfig);
     }
     OptionService.saveConfigurations();
-    AlertService.addAlert('Configuration Saved');
+    //AlertService.addAlert('Configuration Saved');
     $location.path('/tests');
   };
 
-  $scope.addConfig= function(){
+  /*$scope.addConfig= function(save){
     OptionService.addConfig($scope.currentConfig);
-    OptionService.saveConfigurations();
     $scope.currentConfig = $scope.newConfig();
   };
+  */
 
   $scope.edit= function(config){
     $scope.currentConfig = config;  

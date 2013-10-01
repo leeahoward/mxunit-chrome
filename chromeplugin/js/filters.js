@@ -9,13 +9,13 @@ angular.module('mxunitfilters', []).filter('deleted', function() {
 }).filter('statusIcon', function() {
     return function(string) {
       if(string=="Error"){
-        return "icon-thumbs-down";
+        return "icon-warning-sign";
       }
       if(string=="Passed"){
         return "icon-thumbs-up";
       }
       if(string=="Failed"){
-        return "icon-warning-sign";
+        return "icon-thumbs-down";
       }
       if(string=="Running"){
         return "icon-refresh";

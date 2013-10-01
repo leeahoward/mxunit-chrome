@@ -82,7 +82,7 @@ angular.module('mxunitServices',[]).
 
 		function addConfig(config){
 			var configurations = getConfigs();
-			if(!config.id && config.id != 0){
+			if(!('id' in config)){
 				config.id = configurations.length;
 				configurations[configurations.length] = config;
 			}
@@ -97,8 +97,8 @@ angular.module('mxunitServices',[]).
 		}
 
 		function saveConfigurations(){
-			AlertService.addAlert('Saved!');
-	      localStorage[urlStorageKey] = window.JSON.stringify(getConfigs());
+      localStorage[urlStorageKey] = window.JSON.stringify(getConfigs());
+			//AlertService.addAlert('Saved!');
 		}
 
 
@@ -121,7 +121,7 @@ angular.module('mxunitServices',[]).
 		var promises = [];
 
 		//recursively loads all tests in the folder.  Seperate ajax call for each folder.
-		function getDirectory(config,directoryname){
+		function getDirectory(config,directoryname,save){
 			//http://nwahec.leespc.com/rest/test/RemoteFacade.cfc?method=getTestsInDirectory&directoryname=/&returnformat=json
 			var serverurl = config.serverurl;
 			var params = {method:'getDirectory',directoryname:directoryname,returnformat:'json'};
@@ -137,7 +137,7 @@ angular.module('mxunitServices',[]).
 	    	//loop through directories and recursively call this method
 	    	for(var i=0; i<response.DIRECTORIES.length; i++){
 	    		config[response.DIRECTORIES[i].NAME ] = [];
-		    	promises.push(getDirectory( config, directoryname + '/' + response.DIRECTORIES[i].NAME ));
+		    	promises.push(getDirectory( config, directoryname + '/' + response.DIRECTORIES[i].NAME ),false);
 	    	}
 	    	$q.all(promises).then(
 	    		function(){
@@ -169,9 +169,7 @@ angular.module('mxunitServices',[]).
 		    $log.info('Error');
 		  });
 
-		  return deferred.promise.then(function(){
-		 		OptionService.saveConfigurations(); 
-		  });
+		  return deferred.promise.then(save?OptionService.saveConfigurations:null); 
 		}
 
     function newGuid() {

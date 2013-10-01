@@ -27,28 +27,51 @@
 
     <!-- list all Test Components-->
     <div ng-show="config.show" ng-repeat="test in config.tests" class="row-fluid">
-      <div class="span8" ng-click="test.show=!test.show">&nbsp;&nbsp;&nbsp;&nbsp;<i class="{{test.RESULT|statusIcon}}"></i>&nbsp;{{test.componentPath.split('.').pop()}}</div>
-      <div class="span1" ng-click="runAllInComponent(test,config)">
-        <span ng-show="!working">Run</span>
-      </div>
-      <div class="span1">{{test.TIME}}ms</div>
-      <div class="span2" > {{test.RESULT}}</div>
-      <!-- list all Tests in this config-->
-      <div ng-show="test.show" ng-repeat="method in test.runnablemethods | filter:hidePassed " class="row-fluid">
-        <div class="span12">
-          <div class="span8" ng-click="method.result.show=!method.result.show" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="{{method.result.RESULT|statusIcon}}"></i>&nbsp;{{method.name}}</div>
-          <div class="span1" ng-click="runTestMethod(method,config,test)">
+      <div class="span12" >
+        <div class="row-fluid" >
+          <div class="span8" ng-click="test.show=!test.show">
+            &nbsp;
+            &nbsp;
+            <i class="{{test|directoryOpenStatusIndicator}}"></i>
+            <i class="{{test.RESULT|statusIcon}}"></i>
+            {{test.componentPath.split('.').pop()}}
+          </div>
+          <div class="span1" ng-click="runAllInComponent(test,config)">
             <span ng-show="!working">Run</span>
           </div>
-          <div class="span1">{{method.result.TIME}}ms</div>
-          <div class="span2" >{{method.result.RESULT}}</div>
+          <div class="span1">{{test.TIME}}ms</div>
+          <div class="span1" > {{test.RESULT}}</div>
         </div>
-        <div ng-show="method.result.show&&(method.result.RESULT=='Failed'||method.result.RESULT=='Error')" class="span10 well">
-          <div class="span12">{{method.result.MESSAGE}}</div>
-          <div ng-repeat="line in method.result.TAGCONTEXT" class="span12">
-            <div>{{line.LINE}}:{{line.FILE}}</div>
+
+        <!-- list all Tests in this config -->
+        <div ng-show="test.show" ng-repeat="method in test.runnablemethods | filter:hidePassed " class="row-fluid">
+          <div class="span12">
+            <div class="row-fluid">
+              <div class="span8" ng-click="method.result.show=!method.result.show" >
+                &nbsp;
+                &nbsp;
+                &nbsp;
+                &nbsp;
+                <i class="{{method.result|directoryOpenStatusIndicator}}"></i>
+                <i class="{{method.result.RESULT|statusIcon}}"></i>&nbsp;{{method.name}}
+              </div>
+              <div class="span1" ng-click="runTestMethod(method,config,test)">
+                <span ng-show="!working">Run</span>
+              </div>
+              <div class="span1">{{method.result.TIME}}ms</div>
+              <div class="span1" >{{method.result.RESULT}}</div>
+            </div>
+            <div ng-show="method.result.show&&(method.result.RESULT=='Failed'||method.result.RESULT=='Error')" class="row-fluid well">
+              <div class="span12">
+                <div >{{method.result.MESSAGE}}</div>
+                <div ng-repeat="line in method.result.TAGCONTEXT">
+                  <div>{{line.LINE}}:{{line.FILE}}</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
   </div>
 </div>
