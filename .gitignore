@@ -1,6 +1,9 @@
 mxunitchrome.sublime-project
 mxunitchrome.sublime-workspace
 
+bower_components
+node_modules
+
 
 ignored/**/*
 

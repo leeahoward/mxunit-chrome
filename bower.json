@@ -1,0 +1,31 @@
+{
+  "name": "mxunit-chrome",
+  "version": "0.0.1",
+  "homepage": "https://github.com/leeahoward/mxunit-chrome",
+  "authors": [
+    "Lee Howard <leeahoward@gmail.com>"
+  ],
+  "description": "mxunit extension for chrome",
+  "keywords": [
+    "mxunit",
+    "coldfusion",
+    "testing"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.2.16",
+    "angular-route": "~1.2.16",
+    "bootstrap": "~2.3.2"
+  },
+
+    "exportsOverride":{
+    }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "mxunit-chrome",
+  "version": "0.0.0",
+  "description": "mxunit chrome extension",
+  "main": " ",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "grunt-bower-task": "~0.3.4"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leeahoward/mxunit-chrome"
+  },
+  "keywords": [
+    "mxunit",
+    "chrome",
+    "coldfusion",
+    "unit",
+    "testing",
+    "testing"
+  ],
+  "author": "Lee Howard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/leeahoward/mxunit-chrome/issues"
+  },
+  "homepage": "https://github.com/leeahoward/mxunit-chrome"
+}
